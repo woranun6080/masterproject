@@ -123,6 +123,8 @@ for train_index, test_index in k_fold.split(features_sentences):
     print(confusion_matrix(y_test, y_pred))
     print(classification_report(y_test, y_pred))
     
+-------------------------------------------------------------------------------------------------------------------------------------------------
+
 """
 Model : Decision Tree classifier
 สำหรับการทดลองที่ 2 และ 5 ด้วยชุดข้อมูลที่ประกอบไปด้วย หัวข้อข่าว ขั้วความรู้สึก และป้ายกำกับ

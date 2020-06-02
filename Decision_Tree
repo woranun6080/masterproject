@@ -1,5 +1,215 @@
-  
 """
-Model : Naive Bayes classifier
+Model : Decision Tree classifier
 สำหรับการทดลองที่ 1 และ 4 ด้วยชุดข้อมูลที่ประกอบไปด้วย หัวข้อข่าวและป้ายกำกับ
 """
+
+# ใช้ตัดคำภาษาไทย
+import deepcut
+# จัดการเกี่ยวกับ array
+import numpy as np
+import pandas as pd
+
+#ดาวน์โหลดไลบารี่ สำหรับ Decision Tree Classifier
+from sklearn.model_selection import KFold
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics import  classification_report, confusion_matrix
+from sklearn import metrics
+
+#Print performance decision_tree in graphics
+from sklearn.externals.six import StringIO 
+from IPython.display import Image 
+from sklearn.tree import export_graphviz
+import pydotplus
+
+#Module deepcut ตัด String ที่ได้มา ให้อยู่ในรูปแบบ List ของคำ โดย 1 ประโยค จะได้ 1 List เช่น
+#input คือ sentence = [('AEONTS เตรียมขายหุ้นกู้ 4 พันล้าน'),('AJA ฮึดสู้ ดิ้นหนีฟลอร์ที่สอง')]
+#output คือ split_words = ['AEONTS', 'เตรียม', 'ขาย', 'หุ้น', 'กู้', '4', 'พัน', 'ล้าน'],['AJA','ฮึด','สู้', 'ดิ้น', 'หนี','ฟลอร์', 'ที่', 'สอง']
+def split_words(sentence):
+    split_words = deepcut.tokenize(' '.join(str(sentence).split()))
+    return split_words
+
+#data_cross เป็นการเตรียมข้อมูลเพื่อเตรียมแตกคำ(split_word)
+#input คือ text file ข่าวหนึ่งข่าว ต่อหนึ่งบรรทัด เช่น
+#SF กำไร 229 ล้าน ลดลง 9.51เปอร์เซ็นต์
+#SGF สินเชื่อรายย่อยโตฉลุยลุ้นปล่อยกู้ใหม่ปีนี้ทะลุเป้าพันล้าน
+#SGF ลุยล้างขาดทุนสะสมมั่นใจสิ้นปีสินเชื่อทะลุพันล้าน
+#output คือ array ของข่าว เช่น
+#[(SF กำไร 229 ล้าน ลดลง 9.51เปอร์เซ็นต์,change),
+#(SGF สินเชื่อรายย่อยโตฉลุยลุ้นปล่อยกู้ใหม่ปีนี้ทะลุเป้าพันล้าน,nochange),
+#(SGF ลุยล้างขาดทุนสะสมมั่นใจสิ้นปีสินเชื่อทะลุพันล้าน,change)]
+#data_change เอาไฟล์ข่าวเฉพาะที่ change แล้วแปะคำว่า change ลงไปข้างหลัง
+data_cross = [line.split(",") for line in open("stage2_5data5.txt", 'r', encoding="utf-8")]
+
+#นำข้อมูลจาก data_cross มาสร้าง tuple ของแต่ละประโยค
+#input คือ sentence = ['AEONTS เตรียมขายหุ้นกู้ 4 พันล้าน'] และ sentiment = 'change'  
+#output คือ sentences = [('AEONTSเตรียมขายหุ้นกู้4พันล้าน'),'change']
+sentences = [(split_words(sentence), sentiment) for (sentence, sentiment) in data_cross]
+
+#features_data คือ แปลง sentences ให้อยู่ในรูปของ array
+#features_sentences คือ แปลง features_data ให้อยู่ในรูปของ DataFrame
+#X คือหัวข้อข่าว เช่น ['TPCH', 'โต', 'กระฉูด', '-', 'ไตรมาส', '2', 'กำไร', '90', 'ล้าน', 'บาท']
+#y คือ label เช่น Change
+features_data = np.array(sentences)
+features_sentences = pd.DataFrame(features_data)
+X=features_sentences[0]
+y=features_sentences[1]
+y=y.str.strip('\n')
+
+#K_fold คือ สร้าง 5 cross validation โดยแบ่งข้อมูลออกเป็น 5 ส่วน วนซ้ำ 5 รอบ แบ่งเป็น training data 4 ส่วน testing data 1 ส่วน 
+k_fold = KFold(n_splits=5,random_state=None, shuffle=False)
+
+for train_index, test_index in k_fold.split(features_sentences):
+    #แบ่งข้อมูลออกเป็น X_train,X_test,y_train,y_test
+    print("TRAIN:", train_index, "TEST:", test_index)
+    X_train, X_test = X.iloc[train_index], X.iloc[test_index]
+    y_train, y_test = y.iloc[train_index], y.iloc[test_index]
+
+    #แปลง word เป็น vector ด้วย TF-IDF Vectorizer
+    tfidf_vectorizer = TfidfVectorizer(tokenizer=split_words, analyzer='word', lowercase=False, use_idf=True)
+    fitted_vectorizer = tfidf_vectorizer.fit(X_train)
+    X_train_features = fitted_vectorizer.transform(X_train)
+    X_test_features = tfidf_vectorizer.transform(X_test)
+    
+    #สร้าง bag of word จาก TF-IDF
+    bag_of_word = tfidf_vectorizer.get_feature_names()
+    
+#    #ใช้ GridSearchCV หาว่าควรใช้ค่า Criterion and max_depth เป็นเท่าไหร่เพื่อให้ได้ผลดีที่สุด
+#    # เช่น result => criterion - 'gini' max_depth = 6 max_features=None, 
+#    from sklearn.model_selection import GridSearchCV
+#    param_grid = {'max_depth': np.arange(1, 42),'criterion':['entropy','gini']}
+#    tree = GridSearchCV(DecisionTreeClassifier(), param_grid)
+#    tree.fit(X_train_features, y_train)
+#    print(tree.best_estimator_)
+    
+    #Create Decision Tree classifier
+    decision_tree = DecisionTreeClassifier(criterion='gini', max_depth=40)
+    decision_tree.fit(X_train_features, y_train)
+    n=1
+    dot_data = StringIO()
+    export_graphviz(decision_tree, out_file=dot_data, filled=True, rounded=True, special_characters=True,class_names=True, label='all')
+    graph = pydotplus.graph_from_dot_data(dot_data.getvalue()) 
+    graph.write_pdf('tree.png')
+    Image(graph.create_png())
+
+    n=n+1
+    #ได้โมเดลมาแล้วก็ทำการ predict โดย input = X_test_features แล้ว และ output = y_pred_test 
+    y_pred = decision_tree.predict(X_test_features)
+    
+    #แสดงผลลัพธ์ เป็น Confusion_matrix,Classification Report    
+    print('The accuracy of the Decision Tree classifier on predict test data is: {:.2f}\n'.format(metrics.accuracy_score(y_test, y_pred)))
+    print(confusion_matrix(y_test, y_pred))
+    print(classification_report(y_test, y_pred))
+    
+"""
+Model : Decision Tree classifier
+สำหรับการทดลองที่ 2 และ 5 ด้วยชุดข้อมูลที่ประกอบไปด้วย หัวข้อข่าว ขั้วความรู้สึก และป้ายกำกับ
+สำหรับการทดลองที่ 3 และ 6 ด้วยชุดข้อมูลที่ประกอบไปด้วย หัวข้อข่าว ขั้วความรู้สึก และป้ายกำกับ ที่ผ่านการจัดกลุ่มด้วย Cluster แล้ว
+"""
+
+# ใช้ตัดคำภาษาไทย
+import deepcut
+# จัดการเกี่ยวกับ array
+import numpy as np
+import pandas as pd
+
+#สำหรับการสร้างชุดข้อมูลการ train ด้วย Decision Tree Classifier และการ test เพื่อทดสอบประสิทธิภาพด้วย 10Fold cross-validator
+from sklearn.model_selection import KFold
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics import  classification_report, confusion_matrix
+from sklearn.tree import DecisionTreeClassifier
+from sklearn import metrics
+
+#Module deepcut ตัด String ที่ได้มา ให้อยู่ในรูปแบบ List ของคำ โดย 1 ประโยค จะได้ 1 List เช่น
+#input คือ sentence = [('AEONTS เตรียมขายหุ้นกู้ 4 พันล้าน'),('AJA ฮึดสู้ ดิ้นหนีฟลอร์ที่สอง')]
+#output คือ split_words = ['AEONTS', 'เตรียม', 'ขาย', 'หุ้น', 'กู้', '4', 'พัน', 'ล้าน'],['AJA','ฮึด','สู้', 'ดิ้น', 'หนี','ฟลอร์', 'ที่', 'สอง']
+def split_words(sentence):
+   custom_dict = ['กำไรดี','กำไรพุ่ง','กำไรปรับขึ้น','กำไรปรับเพิ่ม','กำไรเพิ่มขึ้น','กำไรน้อย','เงินปันผลจ่าย','ปันผลจ่าย','จังหวะดี','แนะซื้อ','แนะรอซื้อ','แนะนำซื้อ','ปัจจัยหนุน','ปัจจัยหนุน','ดีขึ้น','ทุนเพิ่ม','ผลการดำเนินงานดี','ยอดขายเติบโต','ยอดจองปรับสูง','ยอดขายเพิ่ม','ขายดี','รอซื้อ','ซื้อหุ้น','ตามคาด','กำไรโต','กำไรเพิ่ม',
+                  'ราคาหุ้นขึ้น','ราคาหุ้นบวก','รายงานกำไร','รายได้ดี','รายได้เติบโต','รายได้เพิ่ม','รายได้สูง','ผู้บริหาร','ปรับขึ้น','รายได้หนุน','โอกาสกำไร','โอกาสขาย','ตลาดฟื้นตัว','เงินบาทอ่อนค่า','ทุนเพิ่ม','อุตสาหกรรมดีขึ้น','ผลตอบแทนดี','มูลค่าพื้นฐานบวก','หุ้นบวก','ลงทุนเพิ่ม','แนะเก็งกำไร','การเปลี่ยนแปลงเชิงบวก','ภาษีลด','ลงขัน',
+                  'กำไรต่ำ','กำไรลดลง','กำไรน้อย','กำไรหด','กำไรปรับลง','กำไรถ่วง','กำไรชะลอลง','การฟื้นตัวชะลอ','การฟื้นตัวช้า','การลงทุนไม่อนุมัติ','ปรับลง','ราคาพักตัว','ข่าวลบ','งบขาดทุน','ดอกเบี้ยสูง','แนะขาย','แนะนำขาย','ราคาปรับลด','ราคาปรับลง','กำไรวูบ','ปรับราคา','พันธ์วิเชียร','กำไรดี','ยอดขาย','ตัดขาย',
+                  'กำไรทรงตัว','กำไรทรงๆ','ดอกเบี้ยลด','แนะถือ','แนะนำถือ','ราคาต่ำ','ราคาถูก','ราคาปรับลง','ราคาเป้าหมาย','รายได้ทรงตัว','หุ้นขาย','หุ้นสะสม','ราคาพักตัว','คาดNeutral','มุมมองNeutral','นักลงทุน','ลงทุน','แนะลงทุน','ไม่คิดขาย','ขาดทุน','หุ้นลง','ลด','ขึ้นบัญชี','เป้ากำไร','ไม่เอี่ยว','หุ้นเพิ่มทุน',
+                  'BEM','AOT','2','AJA','ASAP','BEC','CK','CPT','DRT','DTAC','BAFS','BGRIM','BDMS','BJCHI','BKD','RS','AECS','BTS','CMR','CPALL','CRANE','CSS','CWT','CPF','COD','SHREIT','UBM','JV','ความเสี่ยง','ดอกเบี้ยต่ำ','ลงดิน',
+                  'EA','ECF','EE','EPCO','FLOYD','GGC','GIFT','GPSC','HMPRO','KTC','KTC','KWM','LHSC','MINT','SPALI','MK','MTC','MONO','MTC','NOK','OCEAN','PACE','PRM','PTT','KPNL','SAMTEL','SCN','GOLD',
+                  'SAWAD','SCC','SCI','SDC','SF','SGF','SKE','AECS','SMM','SUPER','SVI','TASCO','THRE','TK','TMB','TOP','TPBI','TRC','RC','TVD','ADB','AJA','AMA','UP','APEX','ASP','RAM','RWI','PTTGC',
+                  'WICE','TWZ','TTA','TTCL','TSR','TSTH','TPCH','TMI','TNR','THG','TAPAC','SYNTEC','SUTHA','SPPT','SMART','SKN','SITHAI','SIRI','BCPG','SGP','SCB','ATCH','NWR','KTB','PLE','PORT',
+                  'LOXLEY','LH','MAKRO','MACO','FC','LH','KBANK','IVL','HYDRO','GUNKUL','GULF','GLOW','GL','GJS','FTE','FPI','CPN','JKN','AU','WHA','RKE','MOU','GLAND','TPIPL','PHOL','PICO','PJW',
+                  'NNCL','IPO','GC','GIF','MG','ริโก้','BEAUTY','IRPC','CENTEL','TIGER','THCOM','PSL','BH','POLAR','KTECH','RPC','CAZ','MORE','ADVANC','BJC','TRUE','TCMC','TISCO','DDD','NOBLE','SCN',
+                  'KCE','INTUCH','PPPM','ASIAN','PSL','HBIS','BTW','CNS','SWC','JAS','TU','EARTH','SAAM','TSE','เมย์แบงก์กิมเอ็ง','GSC','CMAN','ARIN','NMG','STA','W4','GESAC','GC','TQM','UREKA','TITLE','PSH',
+                  'EBITDA','กรุงศรี','LALIN','SQ','AIMCG','AGE','STARK','DCC','ALL','KGI','TCAP','CHOU','Neuromeka','MW','SUPER','TEAMG','UP','SAMART','เถ้าแก่น้อย','กำไรไตรมาส','ไม่มีอะไร','พุ่ง','ถอน','ทรุด','วูบ','หาย','สงคราม','ร่วง',
+                  'กำไรร่วง','หั่นเป้า','หุ้นกู้','ไม่เกิน','ขายหุ้นกู้','หนี','ขาดทุน','เทคโอเวอร์','ขึ้นเครื่องหมาย','มั่นใจ','ยื้อ','ห้ามซื้อขาย','ไม่จ่าย','กำไรลด','ฉุด','ผิดหวัง','ไม่เอี่ยว','หนี','ร่วมทุน','กำไรสะดุด','กำไรทรุด','ล้มละลาย','ไม่กระทบ','ติดฟลอร์','หวั่น','รุ่ง','รอซื้อ','เพิ่มส่วนลด',
+                  'ไม่ต่ำกว่า','รายจ่ายบาน','ขายพลังงาน','ชะลอลงทุน','กำไรไม่มา','ขายที่ดิน','ถอน','อนุมัติ','ยิ้ม','ขายทรัพย์สิน','นิวไฮ','ขายโรงงาน','ขายไฟ','ยกเลิก','หด','บุก','ก้าวกระโดด','ปันผล','ลดเอ็นพีแอล','ควบรวม','เครดิตดี','ขายก๊าซ','กำไรพุ่ง','กำไรดิ่ง','ขยาย','ปิดจุดเสี่ยง','รับรู้รายได้',
+                  'หยุดขาดทุน','รายได้หด','ไม่ทิ้ง','ปฏิเสธ','ขายหน่วย','ถูกต้อง','ปลอดภัย','ลดเกรด','ขายผู้ถือหุ้น','เงินบาทแข็ง','เก็บหุ้น','ไม่น้อยกว่า','ดันยอดขาย','รับเงิน','ลดภาระ','ผนึก','ขายเข้าเป้า','ขายเกลี้ยง','กระทบน้อย','ลุย','ขายธุรกิจ','ราคานิ่ง','จ่ายค่า','ต้นทุนลด','ยอดขายทะลัก','มาร์จิ้นหด',
+                  'กำไรไตรมาสแรก','ไม่มีอะไร','ขึ้นบัญชี','ความเสี่ยง','ลงดิน','ขายซิม','สถาบันลงทุน','ยังไม่มี','เทขาย','ต้นทุนลด','ยอดขายทะลัก','มาร์จิ้นหด','เทขาย','ร่วงแรง','ห้าม','ลดวูบ','มาร์จิ้นโต','อ่อนตัว','หนี','ยกฟ้อง','ไม่อั้น','ทำประกัน','จ่ายไฟ','ร่วมค้า','กดดัน','ขายLNG','ลดลง',
+                  'ระงับศึก','ลงขัน','ราคาถูก','ยืนเป้า','ขายแฟรนไชส์','ขายผู้','หนี้','โตต่ำ','ยอดขายเกิน','ขายละคร','ขึ้นดอกเบี้ย','รอดู','ขึ้้นดอกเบี้ย,','ผลงานหรู','ไม่ได้รับผลกระทบ','ขายโรงไฟฟ้า','ไม่เลิก','เพิ่มทุน','ล้างขาดทุนสะสม','ผู้ถือหุ้น','ไม่ต้องจ่าย','จับมือ','รายการพิเศษ','ยกเลิกขาย','บาทอ่อน',
+                  'ลงนาม','ถือหุ้นเพิ่ม','ขายควบคู่','แพ้คดี','ขายแหล่ง','สำนักงานขาย','ขายคู่ค้า','เซ็นสัญญา','ซื้อขายหุ้น','ไม่พบผิด','ต้นทุนการเงินลด','กำไรแค่','ขายควบคู่','ผลดี','ไม่ติดใจ','ล้มเพิ่มทุน','รอประเมิน','ฟื้นกิจการ','ไม่ถูกพายุ','จ่ายสินบน','ซื้อหุ้นเพิ่มทุน','ไม่ด้อย','ตามคาด','หลังขาย','กำไรแผ่ว','ไม่เกี่ยว',
+                  'ลดพาร์','ล้มเพิ่มทุน','บุ๊ครายได้','ขายทรัพย์','ล้มซื้อหุ้น','ขายสินทรัพย์','ไม่ล้ม','ไม่กังวล','ยอดหนี้ลด','ยกเลิกล้มละลาย','ทรัพย์สินสูง','ยกทัพออก','ยกเลิกการล้มละลาย','หั่นราคา','เสี่ยงต่ำ','โตไม่ต่ำกว่า','หนี้เสียลด','ต้องการยาง','ปฎิเสธปิดดีล','เกินคาด','ขาดทุนเพิ่ม','กำไรลดวูบ','ขายหุ้นเพิ่มทุน','ยกเลิกบิน',
+                  'ถือหุ้น','ทุบหุ้น','ลั่นโต','ปตท.สผ.','ไถ่ถอน','ขายหน่วยผลิตไฟฟ้า','ออกหุ้นกู้','ดอกเบี้ยสูงสุด','มาร์จิ้นพุ่ง','ยุติซื้อ','ตอบรับ','ปลิวซื้อหุ้น','ถือหุ้นเพิ่ม','ปีก่อนโต','ไม่สน','โรงพยาบาล','ไม่ได้ทำ','กัดฟันปันผล','เคจีไอ','กำไรตก','ขายโซลาร์','ตัดวงจรขาดทุน','ร่วงแรงกว่าปันผล','หนีเพิ่มทุน','ขาดสภาพคล่อง',
+                  'ปีก่อนโต','หลังเพิ่มทุนขาย','หนี้พุ่ง','ไม่ปฏิเสธ','ค่าเสื่อมราคาประเมินพุ่ง','ขายต่างประเทศ','ต้นทุนเชื้อเพลิงเผาไหม้พุ่ง']
+
+   split_words = deepcut.tokenize(' '.join(str(sentence).split( )), custom_dict = custom_dict )
+   return split_words
+
+#data_cross เป็นการเตรียมข้อมูลเพื่อเตรียมแตกคำ(split_word)
+#input คือ text file ข่าวหนึ่งข่าว ต่อหนึ่งบรรทัด เช่น
+#SF กำไร 229 ล้าน ลดลง 9.51เปอร์เซ็นต์
+#SGF สินเชื่อรายย่อยโตฉลุยลุ้นปล่อยกู้ใหม่ปีนี้ทะลุเป้าพันล้าน
+#SGF ลุยล้างขาดทุนสะสมมั่นใจสิ้นปีสินเชื่อทะลุพันล้าน
+#output คือ array ของข่าว เช่น
+#[(SF กำไร 229 ล้าน ลดลง 9.51เปอร์เซ็นต์,change),
+#(SGF สินเชื่อรายย่อยโตฉลุยลุ้นปล่อยกู้ใหม่ปีนี้ทะลุเป้าพันล้าน,nochange),
+#(SGF ลุยล้างขาดทุนสะสมมั่นใจสิ้นปีสินเชื่อทะลุพันล้าน,change)]
+#data_cross = [line.split(",") for line in open("stage2_5Data_sentiment.txt", 'r', encoding="utf-8")]
+
+#นำข้อมูลจาก data_cross มาสร้าง tuple ของแต่ละประโยค
+#input คือ sentence = ['AEONTS เตรียมขายหุ้นกู้ 4 พันล้าน'] และ sentiment = 'change'  
+#output คือ sentences = [('AEONTSเตรียมขายหุ้นกู้4พันล้าน'),'change']
+sentences = [(split_words(sentence), sentiment, class_sentiment) for (sentence, sentiment, class_sentiment) in data_cross]
+
+#features_data คือ แปลง sentences ให้อยู่ในรูปของ array
+#features_sentences คือ แปลง features_data ให้อยู่ในรูปของ DataFrame
+#X คือหัวข้อข่าว เช่น ['TPCH', 'โต', 'กระฉูด', '-', 'ไตรมาส', '2', 'กำไร', '90', 'ล้าน', 'บาท']
+#y คือ label เช่น Change
+features_data = np.array(sentences)
+features_sentences = pd.DataFrame(features_data)
+X=pd.DataFrame(features_sentences.iloc[:, 0:2])
+y=features_sentences.iloc[:,2]
+y=y.str.strip('\n')
+
+k_fold = KFold(n_splits=5,random_state=None, shuffle=False)
+
+for train_index, test_index in k_fold.split(features_sentences):
+    print("TRAIN:", train_index, "TEST:", test_index)
+    X_train, X_test = X.iloc[train_index], X.iloc[test_index]
+    y_train, y_test = y.iloc[train_index], y.iloc[test_index]
+    tfidf_vectorizer = TfidfVectorizer(tokenizer=split_words, analyzer='word', lowercase=False, use_idf=True)
+    fitted_vectorizer = tfidf_vectorizer.fit(X_train.iloc[:, 0])
+    X_train_features = tfidf_vectorizer.transform(X_train.iloc[:, 0]).toarray()
+    X_train_features_vec = pd.DataFrame(X_train_features)
+    X_train_sentiment = pd.DataFrame(X_train.iloc[:, 1]).reset_index(drop=True)
+    X_train_df = pd.concat([X_train_features_vec, X_train_sentiment], axis=1).reindex(X_train_features_vec.index)
+    X_train_df_array = pd.DataFrame(X_train_df, dtype=np.dtype("float")).to_numpy()
+    X_test_features = tfidf_vectorizer.transform(X_test.iloc[:, 0]).toarray()
+    X_test_features_vec = pd.DataFrame(X_test_features)
+    X_test_sentiment = pd.DataFrame(X_test.iloc[:, 1]).reset_index(drop=True)
+    X_test_df = pd.concat([X_test_features_vec, X_test_sentiment], axis=1).reindex(X_test_features_vec.index)
+    X_test_df_array = pd.DataFrame(X_test_df, dtype=np.dtype("float")).to_numpy()
+    bag_of_word = tfidf_vectorizer.get_feature_names()
+    
+    ##ใช้ GridSearchCV หาว่าควรใช้ค่า Criterion and max_depth เป็นเท่าไหร่เพื่อให้ได้ผลดีที่สุด
+    ## เช่น result => criterion - 'gini' max_depth = 6 max_features=None, 
+    #from sklearn.model_selection import GridSearchCV
+    #param_grid = {'max_depth': np.arange(1, 100),'criterion':['entropy','gini']}
+    #tree = GridSearchCV(DecisionTreeClassifier(), param_grid)
+    #tree.fit(X_train_df_array, y_train)
+    #tree.best_estimator_
+    
+    #Create Decision Tree object
+    decision_tree = DecisionTreeClassifier(criterion='gini',max_depth = 41)
+    decision_tree.fit(X_train_df_array, y_train)
+    
+    #ได้โมเดลมาแล้วก็ทำการ predict โดย input = X_test_std และ output = y_pred
+    y_pred = decision_tree.predict(X_test_df_array)
+    
+    print('The accuracy of the Decision Tree classifier on predict test data is: {:.2f}\n'.format(metrics.accuracy_score(y_test, y_pred)))    
+    print(confusion_matrix(y_test, y_pred))
+    print(classification_report(y_test, y_pred))

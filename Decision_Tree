@@ -13,7 +13,7 @@ import pandas as pd
 from sklearn.model_selection import KFold
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics import  classification_report, confusion_matrix
+from sklearn.metrics import classification_report, confusion_matrix
 from sklearn import metrics
 
 #Print performance decision_tree in graphics
@@ -140,7 +140,7 @@ import pandas as pd
 #สำหรับการสร้างชุดข้อมูลการ train ด้วย Decision Tree Classifier และการ test เพื่อทดสอบประสิทธิภาพด้วย 10Fold cross-validator
 from sklearn.model_selection import KFold
 from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics import  classification_report, confusion_matrix
+from sklearn.metrics import classification_report, confusion_matrix
 from sklearn.tree import DecisionTreeClassifier
 from sklearn import metrics
 

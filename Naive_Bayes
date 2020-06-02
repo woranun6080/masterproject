@@ -105,7 +105,8 @@ for train_index, test_index in k_fold.split(features_sentences):
 
 """
 Model : Naive Bayes classifier
-สำหรับการทดลองที่ 2, 3, 5 และ 6 ด้วยชุดข้อมูลที่ประกอบไปด้วย หัวข้อข่าว ขั้วความรู้สึก และป้ายกำกับ
+สำหรับการทดลองที่ 2 และ 5 ด้วยชุดข้อมูลที่ประกอบไปด้วย หัวข้อข่าว ขั้วความรู้สึก และป้ายกำกับ
+สำหรับการทดลองที่ 3 และ 6 ด้วยชุดข้อมูลที่ประกอบไปด้วย หัวข้อข่าว ขั้วความรู้สึก และป้ายกำกับ ที่ผ่านการจัดกลุ่มด้วย Cluster แล้ว
 """
 
 # ใช้ตัดคำภาษาไทย
@@ -117,14 +118,12 @@ import pandas as pd
 from sklearn.model_selection import KFold
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics import classification_report, confusion_matrix
-from sklearn.naive_bayes import BernoulliNB, MultinomialNB
+from sklearn.naive_bayes import MultinomialNB
 from sklearn import metrics
+
 #Module deepcut ตัด String ที่ได้มา ให้อยู่ในรูปแบบ List ของคำ โดย 1 ประโยค จะได้ 1 List เช่น
 #input คือ sentence = [('AEONTS เตรียมขายหุ้นกู้ 4 พันล้าน'),('AJA ฮึดสู้ ดิ้นหนีฟลอร์ที่สอง')]
 #output คือ split_words = ['AEONTS', 'เตรียม', 'ขาย', 'หุ้น', 'กู้', '4', 'พัน', 'ล้าน'],['AJA','ฮึด','สู้', 'ดิ้น', 'หนี','ฟลอร์', 'ที่', 'สอง']
-#def split_words(sentence):
-#    split_words = deepcut.tokenize(' '.join(str(sentence).split()))
-#    return split_words
 def split_words(sentence):
     custom_dict = ['กำไรดี','กำไรพุ่ง','กำไรปรับขึ้น','กำไรปรับเพิ่ม','กำไรเพิ่มขึ้น','กำไรน้อย','เงินปันผลจ่าย','ปันผลจ่าย','จังหวะดี','แนะซื้อ','แนะรอซื้อ','แนะนำซื้อ','ปัจจัยหนุน','ปัจจัยหนุน','ดีขึ้น','ทุนเพิ่ม','ผลการดำเนินงานดี','ยอดขายเติบโต','ยอดจองปรับสูง','ยอดขายเพิ่ม','ขายดี','รอซื้อ','ซื้อหุ้น','ตามคาด','กำไรโต','กำไรเพิ่ม',
                    'ราคาหุ้นขึ้น','ราคาหุ้นบวก','รายงานกำไร','รายได้ดี','รายได้เติบโต','รายได้เพิ่ม','รายได้สูง','ผู้บริหาร','ปรับขึ้น','รายได้หนุน','โอกาสกำไร','โอกาสขาย','ตลาดฟื้นตัว','เงินบาทอ่อนค่า','ทุนเพิ่ม','อุตสาหกรรมดีขึ้น','ผลตอบแทนดี','มูลค่าพื้นฐานบวก','หุ้นบวก','ลงทุนเพิ่ม','แนะเก็งกำไร','การเปลี่ยนแปลงเชิงบวก','ภาษีลด','ลงขัน',
@@ -158,11 +157,9 @@ def split_words(sentence):
 #output คือ array ของข่าว เช่น
 #[(SF กำไร 229 ล้าน ลดลง 9.51เปอร์เซ็นต์,change),
 #(SGF สินเชื่อรายย่อยโตฉลุยลุ้นปล่อยกู้ใหม่ปีนี้ทะลุเป้าพันล้าน,nochange),
-#(SGF ลุยล้างขาดทุนสะสมมั่นใจสิ้นปีสินเชื่อทะลุพันล้าน,change)]
-#data_cross = [line.split(",") for line in open("stage2_5Data5.txt", 'r', encoding="utf-8")]
-#data_cross = [line.split(",") for line in open("stage2_5Data_sentiment3.txt", 'r', encoding="utf-8")]    
-data_cross = [line.split(",") for line in open("stage2_5Data5_ple.txt", 'r', encoding="utf-8")]
-#data_cross = [line.split(",") for line in open("stage2_5Data_pythai1.txt", 'r', encoding="utf-8")]
+#(SGF ลุยล้างขาดทุนสะสมมั่นใจสิ้นปีสินเชื่อทะลุพันล้าน,change)]   
+data_cross = [line.split(",") for line in open("stage2_5Data5_sentiment.txt", 'r', encoding="utf-8")]
+
 #นำข้อมูลจาก data_cross มาสร้าง tuple ของแต่ละประโยค
 #input คือ sentence = ['AEONTS เตรียมขายหุ้นกู้ 4 พันล้าน'] และ sentiment = 'change'  
 #output คือ sentences = [('AEONTSเตรียมขายหุ้นกู้4พันล้าน'),'change']
@@ -206,8 +203,8 @@ for train_index, test_index in k_fold.split(features_sentences):
     bag_of_word = tfidf_vectorizer.get_feature_names()
     
     #Create Random Forest Classifier MultinomialNB
-    naive_bayes = BernoulliNB().fit(X_train_df_array, y_train)
-    #naive_bayes = MultinomialNB().fit(X_train_df_array, y_train)
+    naive_bayes = MultinomialNB().fit(X_train_df_array, y_train)
+    
     #ได้โมเดลมาแล้วก็ทำการ predict โดย input = X_test_features แล้ว และ output = y_pred_test 
     y_pred = naive_bayes.predict(X_test_df_array)
     

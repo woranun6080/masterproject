@@ -1,7 +1,7 @@
 # masterproject
 Subject : PREDICTING STOCK PRICE DIRECTION USING TEXT CLASSIFICATION AND SENTIMENT ANALYSIS ON STOCK NEWS
 เรื่อง     : การทำนายทิศทางราคาหุ้นด้วยการจำแนกข้อความและอารมณ์จากข่าวหุ้น
-Created Date : 06 June 2020
+Created Date : 02 June 2020
 Created By   : Woranun S.
        
 วิธีใช้

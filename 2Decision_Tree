@@ -104,7 +104,7 @@ for train_index, test_index in k_fold.split(features_sentences):
 #    tree.fit(X_train_features, y_train)
 #    print(tree.best_estimator_)
     
-    #Create Decision Tree classifier
+# Create Decision Tree classifier
     decision_tree = DecisionTreeClassifier(criterion='gini', max_depth=40)
     decision_tree.fit(X_train_features, y_train)
     n=1
@@ -207,16 +207,19 @@ for train_index, test_index in k_fold.split(features_sentences):
     y_train, y_test = y.iloc[train_index], y.iloc[test_index]
     tfidf_vectorizer = TfidfVectorizer(tokenizer=split_words, analyzer='word', lowercase=False, use_idf=True)
     fitted_vectorizer = tfidf_vectorizer.fit(X_train.iloc[:, 0])
+    
     X_train_features = tfidf_vectorizer.transform(X_train.iloc[:, 0]).toarray()
     X_train_features_vec = pd.DataFrame(X_train_features)
     X_train_sentiment = pd.DataFrame(X_train.iloc[:, 1]).reset_index(drop=True)
     X_train_df = pd.concat([X_train_features_vec, X_train_sentiment], axis=1).reindex(X_train_features_vec.index)
     X_train_df_array = pd.DataFrame(X_train_df, dtype=np.dtype("float")).to_numpy()
+    
     X_test_features = tfidf_vectorizer.transform(X_test.iloc[:, 0]).toarray()
     X_test_features_vec = pd.DataFrame(X_test_features)
     X_test_sentiment = pd.DataFrame(X_test.iloc[:, 1]).reset_index(drop=True)
     X_test_df = pd.concat([X_test_features_vec, X_test_sentiment], axis=1).reindex(X_test_features_vec.index)
     X_test_df_array = pd.DataFrame(X_test_df, dtype=np.dtype("float")).to_numpy()
+    
     bag_of_word = tfidf_vectorizer.get_feature_names()
     
     ##ใช้ GridSearchCV หาว่าควรใช้ค่า Criterion and max_depth เป็นเท่าไหร่เพื่อให้ได้ผลดีที่สุด

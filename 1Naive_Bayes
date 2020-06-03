@@ -92,7 +92,7 @@ for train_index, test_index in k_fold.split(features_sentences):
     #Create Random Forest Classifier
     naive_bayes = MultinomialNB().fit(X_train_features, y_train)
     
-    #ได้โมเดลมาแล้วก็ทำการ predict โดย input = X_test_features แล้ว และ output = y_pred_test 
+    #ได้โมเดลมาแล้วก็ทำการ predict โดย input = X_test_features แล้ว และ output = y_pred
     y_pred = naive_bayes.predict(X_test_features)
     
     #แสดงผลลัพธ์ เป็น Confusion_matrix,Classification Report
@@ -204,7 +204,7 @@ for train_index, test_index in k_fold.split(features_sentences):
     #Create Random Forest Classifier MultinomialNB
     naive_bayes = MultinomialNB().fit(X_train_df_array, y_train)
     
-    #ได้โมเดลมาแล้วก็ทำการ predict โดย input = X_test_features แล้ว และ output = y_pred_test 
+    #ได้โมเดลมาแล้วก็ทำการ predict โดย input = X_test_df_array แล้ว และ output = y_pred 
     y_pred = naive_bayes.predict(X_test_df_array)
     
     #แสดงผลลัพธ์ เป็น Confusion_matrix,Classification Report

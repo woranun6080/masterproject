@@ -9,7 +9,7 @@ import deepcut
 import numpy as np
 import pandas as pd
 
-#ดาวน์โหลดไลบารี่ สำหรับ Neural Network Classifier
+#ดาวน์โหลดไลบารี่ สำหรับ Neural Network with multiple hidden layer Classifier
 from sklearn.model_selection import KFold
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics import classification_report, confusion_matrix
@@ -138,8 +138,8 @@ for train_index, test_index in k_fold.split(features_sentences):
     
     #แสดงผลความแม่นยำและค่า loss ในการเทรน
     loss, accuracy = model.evaluate(X_train_features, y_train_enc, verbose=False)
-    print('The accuracy of the Deep Learning Neural Network classifier on train data is = {:.4f}'.format(accuracy))
-    print('The loss of the Deep Learning Neural Network classifier on train data is = {:.4f}'.format(loss))
+    print('The accuracy of the Neural Network with multiple hidden layer classifier on train data is = {:.4f}'.format(accuracy))
+    print('The loss of the Neural Network with multiple hidden layer classifier on train data is = {:.4f}'.format(loss))
 
     #ได้โมเดลมาแล้วก็ทำการ predict โดย input = X_test_features แล้ว และ output = y_pred_test_enc
     y_pred_test = model.predict_classes(X_test_features, verbose=False)
@@ -147,7 +147,7 @@ for train_index, test_index in k_fold.split(features_sentences):
     print('-----------------------------------------------------------------')
     
     #แสดงผลลัพธ์ เป็น Confusion_matrix,Classification Report
-    print('The accuracy of the Deep Learning Neural Network classifier on predict test data is: {:.2f}\n'.format(metrics.accuracy_score(y_test_enc, y_pred_test_enc)))     
+    print('The accuracy of the Neural Network with multiple hidden layer classifier on predict test data is: {:.2f}\n'.format(metrics.accuracy_score(y_test_enc, y_pred_test_enc)))     
     print(confusion_matrix(y_test_enc, y_pred_test_enc))
     print(classification_report(y_test_enc, y_pred_test_enc))
     print(plot_history(history))
@@ -156,8 +156,8 @@ for train_index, test_index in k_fold.split(features_sentences):
    
 """
 Model : Feedforward Backpropagation Neural Network with multiple hidden layer classifier
-สำหรับการทดลองที่ 2 และ 5 ด้วยชุดข้อมูลที่ประกอบไปด้วย หัวข้อข่าว ขั้วความรู้สึก และป้ายกำกับ
-สำหรับการทดลองที่ 3 และ 6 ด้วยชุดข้อมูลที่ประกอบไปด้วย หัวข้อข่าว ขั้วความรู้สึก และป้ายกำกับ ที่ผ่านการจัดกลุ่มด้วย Cluster แล้ว
+สำหรับการทดลองที่ 2 และ 5 ด้วยชุดข้อมูลที่ประกอบไปด้วย หัวข้อข่าว ค่าความรู้สึก และป้ายกำกับ
+สำหรับการทดลองที่ 3 และ 6 ด้วยชุดข้อมูลที่ประกอบไปด้วย หัวข้อข่าว ค่าความรู้สึก และป้ายกำกับ ที่ผ่านการจัดกลุ่มด้วย Cluster แล้ว
 """
 
 # ใช้ตัดคำภาษาไทย
@@ -166,7 +166,7 @@ import deepcut
 import numpy as np
 import pandas as pd
 
-#สำหรับการสร้างชุดข้อมูลการ train ด้วย SVM Classifier และการ test เพื่อทดสอบประสิทธิภาพด้วย 10Fold cross-validator
+#สำหรับการสร้างชุดข้อมูลการ train ด้วย Neural Network with multiple hidden layer Classifier และการ test เพื่อทดสอบประสิทธิภาพด้วย 10Fold cross-validator
 from sklearn.model_selection import KFold
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics import classification_report, confusion_matrix
@@ -300,7 +300,7 @@ for train_index, test_index in k_fold.split(features_sentences):
     
     #แสดงผลความแม่นยำและค่า loss
     loss, accuracy = model.evaluate(X_train_df_array, y_train_enc, verbose=False)
-    print('The accuracy of the Neural Network classifier on train data is = {:.4f}'.format(accuracy))
+    print('The accuracy of the Neural Network with multiple hidden layer classifier on train data is = {:.4f}'.format(accuracy))
     print('The loss of the Neural Network classifier on train data is = {:.4f}'.format(loss))
     plot_history = plot_history(history)
 
@@ -308,6 +308,6 @@ for train_index, test_index in k_fold.split(features_sentences):
     y_pred_test = model.predict_classes(X_test_df_array, verbose=False)
     y_pred_test_enc=encoder.fit_transform(y_pred_test)
     
-    print('The accuracy of the Neural Network classifier on predict test data is: {:.2f}\n'.format(metrics.accuracy_score(y_test_enc, y_pred_test_enc)))     
+    print('The accuracy of the Neural Network with multiple hidden layer classifier on predict test data is: {:.2f}\n'.format(metrics.accuracy_score(y_test_enc, y_pred_test_enc)))     
     print(confusion_matrix(y_test_enc, y_pred_test_enc))
     print(classification_report(y_test_enc, y_pred_test_enc))

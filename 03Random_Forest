@@ -16,12 +16,6 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics import classification_report, confusion_matrix
 from sklearn import metrics
 
-##Print performance decision_tree in graphics
-#from sklearn.externals.six import StringIO 
-#from IPython.display import Image 
-#from sklearn.tree import export_graphviz
-#import pydotplus
-
 #Module deepcut ตัด String ที่ได้มา ให้อยู่ในรูปแบบ List ของคำ โดย 1 ประโยค จะได้ 1 List เช่น
 #input คือ sentence = [('AEONTS เตรียมขายหุ้นกู้ 4 พันล้าน'),('AJA ฮึดสู้ ดิ้นหนีฟลอร์ที่สอง')]
 #output คือ split_words = ['AEONTS', 'เตรียม', 'ขาย', 'หุ้น', 'กู้', '4', 'พัน', 'ล้าน'],['AJA','ฮึด','สู้', 'ดิ้น', 'หนี','ฟลอร์', 'ที่', 'สอง']
@@ -82,7 +76,7 @@ y=y.str.strip('\n')
 k_fold = KFold(n_splits=5,random_state=None, shuffle=False)
 
 for train_index, test_index in k_fold.split(features_sentences):
-    #แบ่งข้อมูลออกเป็น X_train,X_test,y_train,y_test
+   #แบ่งข้อมูลออกเป็น X_train,X_test,y_train,y_test
     print("TRAIN:", train_index, "TEST:", test_index)
     X_train, X_test = X.iloc[train_index], X.iloc[test_index]
     y_train, y_test = y.iloc[train_index], y.iloc[test_index]
@@ -95,14 +89,6 @@ for train_index, test_index in k_fold.split(features_sentences):
     
     #สร้าง bag of word จาก TF-IDF
     bag_of_word = tfidf_vectorizer.get_feature_names()
-    
-#    #ใช้ GridSearchCV หาว่าควรใช้ค่า Criterion and max_depth เป็นเท่าไหร่เพื่อให้ได้ผลดีที่สุด
-#    #เช่น result => criterion - 'gini' max_depth = 6 max_features=None, 
-#    from sklearn.model_selection import GridSearchCV
-#    param_grid = {'max_depth': np.arange(1, 42),'criterion':['entropy','gini']}
-#    tree = GridSearchCV(DecisionTreeClassifier(), param_grid)
-#    tree.fit(X_train_features, y_train)
-#    print(tree.best_estimator_)
     
     #Create Random Forest classifier
     random_forest = RandomForestClassifier(criterion='entropy', max_depth=35, n_estimators=40)
@@ -136,12 +122,6 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics import classification_report, confusion_matrix
 from sklearn import metrics
-
-##Print performance decision_tree in graphics
-#from sklearn.externals.six import StringIO 
-#from IPython.display import Image 
-#from sklearn.tree import export_graphviz
-#import pydotplus
 
 #Module deepcut ตัด String ที่ได้มา ให้อยู่ในรูปแบบ List ของคำ โดย 1 ประโยค จะได้ 1 List เช่น
 #input คือ sentence = [('AEONTS เตรียมขายหุ้นกู้ 4 พันล้าน'),('AJA ฮึดสู้ ดิ้นหนีฟลอร์ที่สอง')]
@@ -181,12 +161,11 @@ def split_words(sentence):
 #[(SF กำไร 229 ล้าน ลดลง 9.51เปอร์เซ็นต์,change),
 #(SGF สินเชื่อรายย่อยโตฉลุยลุ้นปล่อยกู้ใหม่ปีนี้ทะลุเป้าพันล้าน,nochange),
 #(SGF ลุยล้างขาดทุนสะสมมั่นใจสิ้นปีสินเชื่อทะลุพันล้าน,change)]
-#data_cross = [line.split(",") for line in open("Data_sentiment.txt", 'r', encoding="utf-8")]
+data_cross = [line.split(",") for line in open("Data_sentiment.txt", 'r', encoding="utf-8")]
 
 #นำข้อมูลจาก data_cross มาสร้าง tuple ของแต่ละประโยค
 #input คือ sentence = ['AEONTS เตรียมขายหุ้นกู้ 4 พันล้าน'] และ sentiment = 'change'  
 #output คือ sentences = [('AEONTSเตรียมขายหุ้นกู้4พันล้าน'),'change']
-#sentences = [(split_words(sentence), sentiment) for (sentence, sentiment) in data_cross]
 sentences = [(split_words(sentence), sentiment, class_sentiment) for (sentence, sentiment, class_sentiment) in data_cross]
 
 #features_data คือ แปลง sentences ให้อยู่ในรูปของ array
@@ -202,6 +181,7 @@ y=y.str.strip('\n')
 k_fold = KFold(n_splits=5,random_state=None, shuffle=False)
 
 for train_index, test_index in k_fold.split(features_sentences):
+ #แบ่งข้อมูลออกเป็น X_train,X_test,y_train,y_test
     print("TRAIN:", train_index, "TEST:", test_index)
     X_train, X_test = X.iloc[train_index], X.iloc[test_index]
     y_train, y_test = y.iloc[train_index], y.iloc[test_index]
@@ -221,14 +201,6 @@ for train_index, test_index in k_fold.split(features_sentences):
     X_test_df_array = pd.DataFrame(X_test_df, dtype=np.dtype("float")).to_numpy()
 
     bag_of_word = tfidf_vectorizer.get_feature_names()
-    
-#    #ใช้ GridSearchCV หาว่าควรใช้ค่า Criterion and max_depth เป็นเท่าไหร่เพื่อให้ได้ผลดีที่สุด
-#    # เช่น result => criterion - 'gini' max_depth = 6 max_features=None, 
-#    from sklearn.model_selection import GridSearchCV
-#    param_grid = {'max_depth': np.arange(1, 42),'criterion':['entropy','gini']}
-#    tree = GridSearchCV(DecisionTreeClassifier(), param_grid)
-#    tree.fit(X_train_features, y_train)
-#    print(tree.best_estimator_)
     
     #Create Random Forest classifier
     random_forest = RandomForestClassifier(criterion='entropy', max_depth=35, n_estimators=40)

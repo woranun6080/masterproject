@@ -101,14 +101,14 @@ for train_index, test_index in k_fold.split(features_sentences):
 #    svm.fit(X_train_features, y_train)
 #    print(svm.best_estimator_)
 #    
-# Create Random Forest Classifier
+# Create Support Vector Machine Classifier
     svc = SVC(kernel='linear', C=10, gamma=1)
     print(svc.fit(X_train_features, y_train))
     
     #ได้โมเดลมาแล้วก็ทำการ predict โดย input = X_test_features แล้ว และ output = y_pred_test 
     y_pred = svc.predict(X_test_features)
         
-    #แสดงผลลัพธ์ เป็น Confusion_matrix,Classification Report
+    #แสดงผลลัพธ์ เป็น Confusion_matrix, Classification Report
     print('The accuracy of the SVM classifier on predict test data is: {:.2f}\n'.format(metrics.accuracy_score(y_test, y_pred)))
     print(confusion_matrix(y_test, y_pred))
     print(classification_report(y_test, y_pred))    
@@ -117,8 +117,8 @@ for train_index, test_index in k_fold.split(features_sentences):
 
 """
 Model : Support Vector Machine classifier
-สำหรับการทดลองที่ 2 และ 5 ด้วยชุดข้อมูลที่ประกอบไปด้วย หัวข้อข่าว ขั้วความรู้สึก และป้ายกำกับ
-สำหรับการทดลองที่ 3 และ 6 ด้วยชุดข้อมูลที่ประกอบไปด้วย หัวข้อข่าว ขั้วความรู้สึก และป้ายกำกับ ที่ผ่านการจัดกลุ่มด้วย Cluster แล้ว
+สำหรับการทดลองที่ 2 และ 5 ด้วยชุดข้อมูลที่ประกอบไปด้วย หัวข้อข่าว ค่าความรู้สึก และป้ายกำกับ
+สำหรับการทดลองที่ 3 และ 6 ด้วยชุดข้อมูลที่ประกอบไปด้วย หัวข้อข่าว ค่าความรู้สึก และป้ายกำกับ ที่ผ่านการจัดกลุ่มด้วย Cluster แล้ว
 """
 
 # ใช้ตัดคำภาษาไทย
@@ -213,7 +213,7 @@ for train_index, test_index in k_fold.split(features_sentences):
 
     bag_of_word = tfidf_vectorizer.get_feature_names()
     
-    #Create Random Forest Classifier
+    #Create Support Vector Machine Classifier
     svc = SVC(kernel='linear', C=15, gamma=1)
     print(svc.fit(X_train_df_array, y_train))
     

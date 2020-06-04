@@ -118,7 +118,7 @@ for train_index, test_index in k_fold.split(features_sentences):
     y_train_enc=encoder.fit_transform(y_train)
     y_test_enc=encoder.fit_transform(y_test)
     
-    #สร้าง Neural Network Classifier ด้วย keras
+    #สร้าง Neural Network Classifier with one hidden layer ด้วย keras
     model=Sequential()      
     model.add(layers.Dense(500,input_dim=len(bag_of_word),activation='relu'))                          # Adding input layer and first hidden layer
     model.add(layers.Dropout(0.1))
@@ -152,8 +152,8 @@ for train_index, test_index in k_fold.split(features_sentences):
    
 """
 Model : Feedforward Backpropagation Neural Network with 1 hidden layer classifier
-สำหรับการทดลองที่ 2 และ 5 ด้วยชุดข้อมูลที่ประกอบไปด้วย หัวข้อข่าว ขั้วความรู้สึก และป้ายกำกับ
-สำหรับการทดลองที่ 3 และ 6 ด้วยชุดข้อมูลที่ประกอบไปด้วย หัวข้อข่าว ขั้วความรู้สึก และป้ายกำกับ ที่ผ่านการจัดกลุ่มด้วย Cluster แล้ว
+สำหรับการทดลองที่ 2 และ 5 ด้วยชุดข้อมูลที่ประกอบไปด้วย หัวข้อข่าว ค่าความรู้สึก และป้ายกำกับ
+สำหรับการทดลองที่ 3 และ 6 ด้วยชุดข้อมูลที่ประกอบไปด้วย หัวข้อข่าว ค่าความรู้สึก และป้ายกำกับ ที่ผ่านการจัดกลุ่มด้วย Cluster แล้ว
 """
 
 # ใช้ตัดคำภาษาไทย

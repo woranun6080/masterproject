@@ -89,7 +89,7 @@ for train_index, test_index in k_fold.split(features_sentences):
     #สร้าง bag of word จาก TF-IDF
     bag_of_word = tfidf_vectorizer.get_feature_names()
     
-    #Create Random Forest Classifier
+    #Create Naive Bayes Classifier
     naive_bayes = MultinomialNB().fit(X_train_features, y_train)
     
     #ได้โมเดลมาแล้วก็ทำการ predict โดย input = X_test_features แล้ว และ output = y_pred
@@ -201,7 +201,7 @@ for train_index, test_index in k_fold.split(features_sentences):
     #สร้าง bag of word จาก TF-IDF
     bag_of_word = tfidf_vectorizer.get_feature_names()
     
-    #Create Random Forest Classifier MultinomialNB
+    #Create Naive Bayes Classifier MultinomialNB
     naive_bayes = MultinomialNB().fit(X_train_df_array, y_train)
     
     #ได้โมเดลมาแล้วก็ทำการ predict โดย input = X_test_df_array แล้ว และ output = y_pred 

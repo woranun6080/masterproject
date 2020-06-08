@@ -120,7 +120,7 @@ for train_index, test_index in k_fold.split(features_sentences):
     
     #สร้าง Neural Network Classifier with one hidden layer ด้วย keras
     model=Sequential()      
-    model.add(layers.Dense(500,input_dim=len(bag_of_word),activation='relu'))                          # Adding input layer and first hidden layer
+    model.add(layers.Dense(500,input_dim=len(bag_of_word),activation='linear'))                        # Adding input layer and first hidden layer
     model.add(layers.Dropout(0.1))
     model.add(layers.Dense(1, activation='sigmoid'))                                                   # Adding the output layer
     model.add(layers.Dropout(0.1))                                                                   
@@ -134,20 +134,20 @@ for train_index, test_index in k_fold.split(features_sentences):
     
     #แสดงผลความแม่นยำและค่า loss ในการเทรน
     loss, accuracy = model.evaluate(X_train_features, y_train_enc, verbose=False)
-    print('The accuracy of the Deep Learning Neural Network classifier on train data is = {:.4f}'.format(accuracy))
-    print('The loss of the Deep Learning Neural Network classifier on train data is = {:.4f}'.format(loss))
-
+    print('The accuracy of the Single Layer Neural Network classifier on train data is = {:.4f}'.format(accuracy))
+    print('The loss of the Single Layer Neural Network classifier on train data is = {:.4f}'.format(loss))
+    print(plot_history(history))
+    
     #ได้โมเดลมาแล้วก็ทำการ predict โดย input = X_test_features แล้ว และ output = y_pred_test_enc
     y_pred_test = model.predict_classes(X_test_features, verbose=False)
     y_pred_test_enc=encoder.fit_transform(y_pred_test)
     print('-----------------------------------------------------------------')
     
     #แสดงผลลัพธ์ เป็น Confusion_matrix,Classification Report
-    print('The accuracy of the Deep Learning Neural Network classifier on predict test data is: {:.2f}\n'.format(metrics.accuracy_score(y_test_enc, y_pred_test_enc)))     
+    print('The accuracy of the Single Layer Neural Network classifier on predict test data is: {:.2f}\n'.format(metrics.accuracy_score(y_test_enc, y_pred_test_enc)))     
     print(confusion_matrix(y_test_enc, y_pred_test_enc))
     print(classification_report(y_test_enc, y_pred_test_enc))
-    print(plot_history(history))
-   
+
 -------------------------------------------------------------------------------------------------------------------------------------------------
    
 """
@@ -279,7 +279,7 @@ for train_index, test_index in k_fold.split(features_sentences):
     y_test_enc=encoder.fit_transform(y_test)
     
     model=Sequential()      
-    model.add(layers.Dense(500, input_dim=len(bag_of_word)+1,activation='relu'))                        # Adding input layer and first hidden layer
+    model.add(layers.Dense(500, input_dim=len(bag_of_word)+1,activation='linear'))                        # Adding input layer and first hidden layer
     model.add(layers.Dropout(0.1))
     model.add(layers.Dense(1, activation='sigmoid'))                                                    # Adding the output layer
     model.add(layers.Dropout(0.1))
@@ -292,15 +292,15 @@ for train_index, test_index in k_fold.split(features_sentences):
     
     #แสดงผลความแม่นยำและค่า loss
     loss, accuracy = model.evaluate(X_train_df_array, y_train_enc, verbose=False)
-    print('The accuracy of the Neural Network classifier on train data is = {:.4f}'.format(accuracy))
-    print('The loss of the Neural Network classifier on train data is = {:.4f}'.format(loss))
+    print('The accuracy of the Single Layer Neural Network classifier on train data is = {:.4f}'.format(accuracy))
+    print('The loss of the Single Layer Neural Network classifier on train data is = {:.4f}'.format(loss))
     plot_history = plot_history(history)
 
     #ได้โมเดลมาแล้วก็ทำการ predict โดย input = X_test_df_array และ output = y_pred_test_enc
     y_pred_test = model.predict_classes(X_test_df_array, verbose=False)
     y_pred_test_enc=encoder.fit_transform(y_pred_test)
     
-    print('The accuracy of the Neural Network classifier on predict test data is: {:.2f}\n'.format(metrics.accuracy_score(y_test_enc, y_pred_test_enc)))     
+    print('The accuracy of the Single Layer Neural Network classifier on predict test data is: {:.2f}\n'.format(metrics.accuracy_score(y_test_enc, y_pred_test_enc)))     
     print(confusion_matrix(y_test_enc, y_pred_test_enc))
     print(classification_report(y_test_enc, y_pred_test_enc))   
     

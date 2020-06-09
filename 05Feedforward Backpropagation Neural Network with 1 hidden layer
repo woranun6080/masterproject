@@ -1,5 +1,5 @@
 """
-Model : Feedforward Backpropagation Neural Network with 1 hidden layer classifier
+Model : Feedforward Backpropagation Neural Network with one hidden layer classifier
 สำหรับการทดลองที่ 1 และ 4 ด้วยชุดข้อมูลที่ประกอบไปด้วย หัวข้อข่าวและป้ายกำกับ
 """
 
@@ -144,7 +144,7 @@ for train_index, test_index in k_fold.split(features_sentences):
     print('-----------------------------------------------------------------')
     
     #แสดงผลลัพธ์ เป็น Confusion_matrix,Classification Report
-    print('The accuracy of the Single Layer Neural Network classifier on predict test data is: {:.2f}\n'.format(metrics.accuracy_score(y_test_enc, y_pred_test_enc)))     
+    print('The accuracy of the single layer neural network classifier on predict test data is: {:.2f}\n'.format(metrics.accuracy_score(y_test_enc, y_pred_test_enc)))     
     print(confusion_matrix(y_test_enc, y_pred_test_enc))
     print(classification_report(y_test_enc, y_pred_test_enc))
 
@@ -300,7 +300,7 @@ for train_index, test_index in k_fold.split(features_sentences):
     y_pred_test = model.predict_classes(X_test_df_array, verbose=False)
     y_pred_test_enc=encoder.fit_transform(y_pred_test)
     
-    print('The accuracy of the Single Layer Neural Network classifier on predict test data is: {:.2f}\n'.format(metrics.accuracy_score(y_test_enc, y_pred_test_enc)))     
+    print('The accuracy of the single layer neural network classifier on predict test data is: {:.2f}\n'.format(metrics.accuracy_score(y_test_enc, y_pred_test_enc)))     
     print(confusion_matrix(y_test_enc, y_pred_test_enc))
     print(classification_report(y_test_enc, y_pred_test_enc))   
     
